@@ -5,13 +5,13 @@
   },
   "metadata": {
     "description": "Session handoffs for Codex and Claude Code",
-    "version": "0.1.3"
+    "version": "0.1.4"
   },
   "plugins": [
     {
       "name": "session-handoffs",
       "source": "./",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "description": "Four explicit session handoffs between Codex and Claude Code, with portable terminal launch and duplicate protection."
     }
   ]

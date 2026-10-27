@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "session-handoffs",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Four explicit session handoffs between Codex and Claude Code, with portable terminal launch and duplicate protection.",
   "author": {
     "name": "Compound Labs",
@@ -15,7 +15,7 @@
       "requires_local_executor": true,
       "interface": {
         "displayName": "Session Handoffs",
-        "shortDescription": "Move work between coding agents",
+        "shortDescription": "Hand off work between agents",
         "longDescription": "Four explicit session handoffs between Codex and Claude Code, with portable terminal launch and duplicate protection. Supports Codex and Claude Code. See the repository for setup requirements, tested behavior, and limitations.",
         "developerName": "Compound Labs",
         "category": "Developer Tools",
@@ -30,7 +30,7 @@
         "termsOfServiceURL": "https://github.com/kyisaiah47/session-handoffs/blob/main/LICENSE"
       },
       "publication": {
-        "release_notes": "Add public data-handling documentation and explicit privacy and license links for marketplace submission."
+        "release_notes": "Shorten the listing subtitle to the public marketplace character limit."
       }
     }
   }
