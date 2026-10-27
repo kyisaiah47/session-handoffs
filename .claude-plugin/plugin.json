@@ -1,6 +1,6 @@
 {
   "name": "session-handoffs",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Four explicit session handoffs between Codex and Claude Code, with portable terminal launch and duplicate protection.",
   "author": {
     "name": "Compound Labs"
@@ -8,5 +8,9 @@
   "homepage": "https://github.com/kyisaiah47/session-handoffs",
   "repository": "https://github.com/kyisaiah47/session-handoffs",
   "license": "LicenseRef-Compound-Labs-Proprietary",
-  "skills": "./skills/"
+  "skills": "./skills/",
+  "displayName": "Session Handoffs",
+  "supportUrl": "https://github.com/kyisaiah47/session-handoffs/issues",
+  "privacyPolicyUrl": "https://github.com/kyisaiah47/session-handoffs/blob/main/PRIVACY.md",
+  "termsOfServiceUrl": "https://github.com/kyisaiah47/session-handoffs/blob/main/LICENSE"
 }

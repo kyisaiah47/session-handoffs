@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "session-handoffs",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Four explicit session handoffs between Codex and Claude Code, with portable terminal launch and duplicate protection.",
   "author": {
     "name": "Compound Labs",
@@ -30,7 +30,7 @@
         "termsOfServiceURL": "https://github.com/kyisaiah47/session-handoffs/blob/main/LICENSE"
       },
       "publication": {
-        "release_notes": "Shorten the listing subtitle to the public marketplace character limit."
+        "release_notes": "Add Claude Directory display name and privacy, support, and terms links to the Claude plugin manifest."
       }
     }
   }
