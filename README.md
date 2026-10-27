@@ -24,7 +24,7 @@ Start a new session, then explicitly invoke `/session-handoffs:claude-to-codex` 
 /session-handoffs:claude-to-codex Finish the pagination change in the current worktree. Include the tests already run and preserve the unrelated settings edit.
 ```
 
-For a temporary installation without registering a marketplace, clone the repository and start `claude --plugin-dir /absolute/path/to/session-handoffs`. The full bundle is required; copying one `SKILL.md` omits the shared launcher.
+For a temporary installation without registering a marketplace, clone the repository and start `claude --plugin-dir /absolute/path/to/session-handoffs`. Plugin installation provides all four skills. Each skill folder also contains its own launcher, reference, and license for standalone installation.
 
 ## Install in Codex
 
@@ -36,20 +36,33 @@ codex plugin marketplace add kyisaiah47/session-handoffs
 
 Install Session Handoffs through your client's plugin browser. Plugin install UI and availability vary by Codex surface; this package needs a local executor, filesystem access, and permission to open a terminal.
 
-For CLI skill-directory installation, clone this repository to a stable location and link the two Codex-origin folders into your skills directory:
-
-```sh
-git clone https://github.com/kyisaiah47/session-handoffs.git
-mkdir -p "$HOME/.agents/skills"
-ln -s "$(pwd)/session-handoffs/skills/codex-to-codex" "$HOME/.agents/skills/codex-to-codex"
-ln -s "$(pwd)/session-handoffs/skills/codex-to-claude" "$HOME/.agents/skills/codex-to-claude"
-```
-
-Do not overwrite an existing folder or link. Keep the checkout in place so the shared scripts and references remain available. Restart Codex, then invoke `$codex-to-claude` or `$codex-to-codex` explicitly. Example:
+Restart Codex after installation, then invoke `$codex-to-claude` or `$codex-to-codex` explicitly. Example:
 
 ```text
 Use $codex-to-claude to continue the current bug fix in Claude Code. Include the failing reproduction, completed edits, and the remaining acceptance checks.
 ```
+
+## Install individual skills with the skills CLI
+
+The [skills CLI](https://github.com/vercel-labs/skills/blob/main/docs/commands.md) can install selected folders from this repository. It requires Node.js 22.20 or later. These commands install to the current project; add `-g` for a global installation:
+
+```sh
+# The two skills sent from Codex
+npx skills add kyisaiah47/session-handoffs --skill codex-to-codex --skill codex-to-claude -a codex
+
+# The two skills sent from Claude Code
+npx skills add kyisaiah47/session-handoffs --skill claude-to-claude --skill claude-to-codex -a claude-code
+```
+
+To install all four for both hosts instead:
+
+```sh
+npx skills add kyisaiah47/session-handoffs --skill '*' -a codex -a claude-code
+```
+
+Choose the desired installation method when prompted. Both copy and symlink installations work: **each `skills/<name>/` folder is self-contained**, including `SKILL.md`, `scripts/handoff.py`, `references/workflow.md`, the license, and Codex metadata. Do not install only the `SKILL.md` file. Standalone Claude skills use `/claude-to-codex` and `/claude-to-claude`; the `/session-handoffs:` prefix applies to plugin installations.
+
+For a manual install, copy one complete `skills/<name>/` folder into the selected agent's skills directory, preserving its contents. Avoid overwriting an existing skill without reviewing it. No original repository checkout or sibling skill is required after copying.
 
 Both hosts can discover the four packaged skills. Use the two matching the current assistant as sender; the direction names prevent collisions between same-assistant and cross-assistant handoffs.
 
@@ -73,11 +86,23 @@ The launcher accepts a configurable executable/argument prefix, uses subprocess 
 ## Validation
 
 ```sh
+python3 scripts/sync_skills.py --check
 python3 -m unittest discover -s tests -v
 claude plugin validate --strict .
 ```
 
-Tests use stub clients and a stub terminal. They verify all four directions, exact prompt argument preservation, chosen working directory, receiver-loop refusal, failures, status redaction, and duplicate protection. They do not launch real assistant sessions or assert that an authenticated model completes a task. Terminal.app and Linux desktop integration require a user-authorized live smoke test in the target environment.
+Tests use stub clients and a stub terminal. They verify all four directions, exact prompt argument preservation, chosen working directory, receiver-loop refusal, failures, status redaction, and duplicate protection. They also copy each of the four skill folders into an isolated location and run its bundled launcher without accessing repository assets, then check deterministic synchronization and drift detection. They do not launch real assistant sessions or assert that an authenticated model completes a task. Terminal.app and Linux desktop integration require a user-authorized live smoke test in the target environment.
+
+## Maintaining the shared implementation
+
+Edit the canonical `scripts/handoff.py`, `references/workflow.md`, or root `LICENSE`, then run:
+
+```sh
+python3 scripts/sync_skills.py
+python3 scripts/sync_skills.py --check
+```
+
+The first command copies those exact bytes into each distributable skill folder; the second fails on missing, changed, or symlinked bundled assets without modifying them. Commit the generated copies with the canonical changes. All copies are ordinary files, so archive and directory-based installers preserve functionality. Do not hand-edit the generated copies under `skills/*/scripts/`, `skills/*/references/`, or `skills/*/LICENSE`.
 
 ## Compatibility sources
 

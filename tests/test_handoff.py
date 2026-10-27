@@ -9,6 +9,7 @@ import time
 import unittest
 from unittest import mock
 import importlib.util
+import shutil
 
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts/handoff.py"
 
@@ -32,9 +33,10 @@ class HandoffTests(unittest.TestCase):
         self.terminal.write_text("#!/usr/bin/env python3\nimport os,pty,subprocess,sys\nmaster,slave=pty.openpty()\np=subprocess.Popen(sys.argv[1:],stdin=slave,stdout=slave,stderr=slave)\nos.close(slave)\nwhile True:\n try:\n  if not os.read(master,65536): break\n except OSError: break\nos.close(master)\nraise SystemExit(p.wait())\n")
         self.terminal.chmod(0o700)
         self.env = dict(os.environ, TEST_EVENTS=str(self.events), CLAUDECODE="1")
+        self.script = SCRIPT
 
     def command(self, *extra, source="codex", destination="claude", operation="handoff-1"):
-        return [sys.executable, str(SCRIPT), "launch", "--from", source, "--to", destination,
+        return [sys.executable, str(self.script), "launch", "--from", source, "--to", destination,
                 "--cwd", str(self.cwd), "--prompt-file", str(self.prompt), "--id", operation,
                 "--state-dir", str(self.state), "--client-command-json", json.dumps([str(self.client), "--chosen-option", "literal value"]),
                 "--terminal-command-json", json.dumps([str(self.terminal)]), *extra]
@@ -107,14 +109,14 @@ class HandoffTests(unittest.TestCase):
 
     def test_status_hides_prepared_prompt(self):
         self.invoke("--terminal-command-json", json.dumps(["/usr/bin/false"]))
-        result = subprocess.run([sys.executable, str(SCRIPT), "status", str(self.state/"handoff-1.json")], text=True, capture_output=True)
+        result = subprocess.run([sys.executable, str(self.script), "status", str(self.state/"handoff-1.json")], text=True, capture_output=True)
         data = json.loads(result.stdout)
         self.assertNotIn("prompt", data)
         self.assertNotIn("Fix the parser", result.stdout)
 
     def test_noninteractive_receiver_refuses_execution(self):
         self.invoke("--terminal-command-json", json.dumps(["/usr/bin/false"]))
-        result = subprocess.run([sys.executable, str(SCRIPT), "run", str(self.state/"handoff-1.json")], text=True, capture_output=True)
+        result = subprocess.run([sys.executable, str(self.script), "run", str(self.state/"handoff-1.json")], text=True, capture_output=True)
         self.assertEqual(result.returncode, 1)
         self.assertIn("requires an interactive terminal", result.stderr)
         self.assertFalse(self.events.exists())
@@ -129,7 +131,7 @@ class HandoffTests(unittest.TestCase):
     def test_reopened_receiver_cannot_launch_twice(self):
         self.invoke()
         self.receipt()
-        result = subprocess.run([str(self.terminal), sys.executable, str(SCRIPT), "run", str(self.state/"handoff-1.json")], env=self.env, capture_output=True)
+        result = subprocess.run([str(self.terminal), sys.executable, str(self.script), "run", str(self.state/"handoff-1.json")], env=self.env, capture_output=True)
         self.assertEqual(result.returncode, 1)
         self.assertEqual(len(self.events.read_text().splitlines()), 1)
 
@@ -145,6 +147,67 @@ class HandoffTests(unittest.TestCase):
         import shlex
         self.assertEqual(shlex.split(runner.read_text().splitlines()[1])[1:], command)
         self.assertNotIn("Fix the parser", runner.read_text())
+
+    def test_each_copied_skill_runs_without_repository_assets(self):
+        package = SCRIPT.parents[1]
+        for skill in sorted((package / "skills").iterdir()):
+            if not skill.is_dir():
+                continue
+            with self.subTest(skill=skill.name):
+                isolated = self.root / "isolated" / skill.name
+                shutil.copytree(skill, isolated, ignore=shutil.ignore_patterns("__pycache__"))
+                self.assertTrue((isolated / "LICENSE").is_file())
+                self.assertTrue((isolated / "agents/openai.yaml").is_file())
+                text = (isolated / "SKILL.md").read_text()
+                for link in __import__("re").findall(r"\]\(([^)]+)\)", text):
+                    target = (isolated / link).resolve()
+                    self.assertTrue(target.is_relative_to(isolated.resolve()))
+                    self.assertTrue(target.is_file())
+                self.assertNotIn("../../", text)
+                self.assertNotIn("/absolute/package/root", (isolated / "references/workflow.md").read_text())
+                self.script = isolated / "scripts/handoff.py"
+                source, destination = skill.name.split("-to-")
+                result = self.invoke(source=source, destination=destination, operation=skill.name)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                data = self.receipt(skill.name)
+                self.assertEqual(data["status"], "client-exited")
+                self.assertEqual(data["client_exit_code"], 0)
+                self.assertEqual(data["version"], "0.1.1")
+                self.assertEqual(self.invoke(source=source, destination=destination, operation=skill.name).returncode, 2)
+                event = json.loads(self.events.read_text().splitlines()[-1])
+                self.assertIn(f"fresh {destination} destination", event["argv"][-1])
+                self.assertIn(self.text.strip(), event["argv"][-1])
+                status = subprocess.run([sys.executable, str(self.script), "status", str(self.state/(skill.name+".json"))], text=True, capture_output=True)
+                self.assertEqual(status.returncode, 0, status.stderr)
+                self.assertNotIn("prompt", json.loads(status.stdout))
+        self.assertEqual(len(self.events.read_text().splitlines()), 4)
+
+    def test_bundle_sync_detects_and_repairs_drift(self):
+        spec = importlib.util.spec_from_file_location("sync_skills", SCRIPT.parent / "sync_skills.py")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        self.assertEqual(module.sync(SCRIPT.parents[1], check=True), [])
+        fixture = self.root / "sync-fixture"
+        fixture.mkdir()
+        for asset in module.ASSETS:
+            target = fixture / asset
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes((SCRIPT.parents[1] / asset).read_bytes())
+        for name in module.SKILLS:
+            folder = fixture / "skills" / name
+            folder.mkdir(parents=True)
+            (folder / "SKILL.md").write_text("fixture")
+        missing = module.sync(fixture, check=True)
+        self.assertEqual(len(missing), len(module.ASSETS)*len(module.SKILLS))
+        self.assertFalse((fixture/"skills/codex-to-codex/scripts/handoff.py").exists())
+        self.assertEqual(module.sync(fixture), [])
+        self.assertEqual(module.sync(fixture, check=True), [])
+        copied = fixture/"skills/codex-to-codex/scripts/handoff.py"
+        copied.write_text("changed")
+        self.assertEqual(module.sync(fixture, check=True), ["codex-to-codex/scripts/handoff.py"])
+        self.assertEqual(copied.read_text(), "changed")
+        module.sync(fixture)
+        self.assertEqual(copied.read_bytes(), (fixture/"scripts/handoff.py").read_bytes())
 
 
 if __name__ == "__main__":

@@ -10,7 +10,7 @@ Use only in a Claude Code sending session after this skill is explicitly invoked
 
 If the current task begins with `[SESSION HANDOFF — RECEIVER]`, execute the handed-off task here. Do not launch another session because its prompt mentions this skill. Another handoff requires a new user request.
 
-Read [the shared handoff workflow](../../references/workflow.md), which contains the prompt contract, portable launcher, and result interpretation. Resolve that file and `../../scripts/handoff.py` from this installed skill's real directory; keep the full plugin/repository together.
+Read [the handoff workflow](references/workflow.md), which contains the prompt contract, portable launcher, and result interpretation. Resolve that file and `scripts/handoff.py` inside this installed skill's real directory. This folder is self-contained and does not require sibling skills or the original repository checkout.
 
 Prepare the self-contained prompt, then use the bundled launcher with `--from claude --to claude`. Preserve the destination client's existing model and permission settings unless the user requests a change. Never invoke the other destination by mistake.
 
