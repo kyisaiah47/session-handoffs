@@ -114,3 +114,7 @@ The first command copies those exact bytes into each distributable skill folder;
 The launcher uses the documented interactive `codex [PROMPT]` and `claude [prompt]` forms. It does not depend on account-pool launchers or private local services.
 
 Copyright 2026 Compound Labs. All rights reserved. See [LICENSE](LICENSE) for permission to install, use, and locally adapt this package.
+
+## Privacy and terms
+
+Read the [data-handling policy](PRIVACY.md) and [usage terms](LICENSE) before use.
