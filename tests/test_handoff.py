@@ -172,7 +172,7 @@ class HandoffTests(unittest.TestCase):
                 data = self.receipt(skill.name)
                 self.assertEqual(data["status"], "client-exited")
                 self.assertEqual(data["client_exit_code"], 0)
-                self.assertEqual(data["version"], "0.1.1")
+                self.assertEqual(data["version"], json.loads((SCRIPT.parent.parent / "plugin.json").read_text())["version"])
                 self.assertEqual(self.invoke(source=source, destination=destination, operation=skill.name).returncode, 2)
                 event = json.loads(self.events.read_text().splitlines()[-1])
                 self.assertIn(f"fresh {destination} destination", event["argv"][-1])

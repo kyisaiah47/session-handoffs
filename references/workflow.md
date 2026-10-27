@@ -17,10 +17,10 @@ Do not include passwords, tokens, private account-routing information, or unrela
 
 ## Launch one session
 
-Resolve the full package root from the real location of this skill's `SKILL.md`. Use its bundled script with Python 3.9 or newer. Keep the full repository/plugin installed because all four skills share this script and reference.
+Resolve this installed skill's directory from the real location of its `SKILL.md`. Use the `scripts/handoff.py` bundled inside that directory with Python 3.9 or newer. Every skill folder contains its own launcher, workflow, and license, so it works when copied independently by a skill installer.
 
 ```text
-python3 /absolute/package/root/scripts/handoff.py launch \
+python3 /absolute/installed/skill/scripts/handoff.py launch \
   --from codex --to claude \
   --prompt-file /absolute/path/to/handoff.txt \
   --cwd /absolute/project/path \
@@ -42,7 +42,7 @@ macOS uses Terminal.app. Linux tries `x-terminal-emulator`, `gnome-terminal`, `k
 The launcher prints a receipt path. Use:
 
 ```text
-python3 /absolute/package/root/scripts/handoff.py status /absolute/receipt.json
+python3 /absolute/installed/skill/scripts/handoff.py status /absolute/receipt.json
 ```
 
 `status` excludes the prompt. Receipts and temporary terminal runner files are stored under `$XDG_STATE_HOME/session-handoffs`, or `~/.local/state/session-handoffs`. The directory must be private, mode 0700. Files are mode 0600, except executable runner files (0700).

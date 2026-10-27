@@ -16,7 +16,7 @@ import sys
 import time
 
 MARKER = "[SESSION HANDOFF — RECEIVER]"
-VERSION = "0.1.1"
+VERSION = "0.1.2"
 
 
 def now():
