@@ -1,0 +1,20 @@
+{
+  "name": "session-handoffs-marketplace",
+  "interface": {
+    "displayName": "Session Handoffs"
+  },
+  "plugins": [
+    {
+      "name": "session-handoffs",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

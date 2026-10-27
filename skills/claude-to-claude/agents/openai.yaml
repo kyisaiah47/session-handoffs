@@ -1,0 +1,6 @@
+interface:
+  display_name: "Claude Code to Claude Code"
+  short_description: "Hand work to a fresh Claude Code session"
+  default_prompt: "Use $claude-to-claude to hand the current task to a fresh Claude Code session."
+policy:
+  allow_implicit_invocation: false

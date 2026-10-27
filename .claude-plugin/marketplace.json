@@ -1,0 +1,18 @@
+{
+  "name": "session-handoffs-marketplace",
+  "owner": {
+    "name": "Compound Labs"
+  },
+  "metadata": {
+    "description": "Session handoffs for Codex and Claude Code",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "session-handoffs",
+      "source": "./",
+      "version": "0.1.0",
+      "description": "Four explicit session handoffs between Codex and Claude Code, with portable terminal launch and duplicate protection."
+    }
+  ]
+}

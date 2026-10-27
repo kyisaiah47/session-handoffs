@@ -1,0 +1,35 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "session-handoffs",
+  "version": "0.1.0",
+  "description": "Four explicit session handoffs between Codex and Claude Code, with portable terminal launch and duplicate protection.",
+  "author": {
+    "name": "Compound Labs",
+    "url": "https://github.com/kyisaiah47"
+  },
+  "homepage": "https://github.com/kyisaiah47/session-handoffs",
+  "repository": "https://github.com/kyisaiah47/session-handoffs",
+  "license": "LicenseRef-Compound-Labs-Proprietary",
+  "extensions": {
+    "com.openai": {
+      "requires_local_executor": true,
+      "interface": {
+        "displayName": "Session Handoffs",
+        "shortDescription": "Move work between coding agents",
+        "longDescription": "Four explicit session handoffs between Codex and Claude Code, with portable terminal launch and duplicate protection. Supports Codex and Claude Code. See the repository for setup requirements, tested behavior, and limitations.",
+        "developerName": "Compound Labs",
+        "category": "Developer Tools",
+        "websiteURL": "https://github.com/kyisaiah47/session-handoffs",
+        "supportURL": "https://github.com/kyisaiah47/session-handoffs/issues",
+        "defaultPrompt": [
+          "Hand this task to a fresh Claude Code session with its current state."
+        ],
+        "composerIcon": "./assets/icon.svg",
+        "logo": "./assets/icon.svg"
+      },
+      "publication": {
+        "release_notes": "Initial public package for Codex and Claude Code."
+      }
+    }
+  }
+}
